@@ -61,7 +61,7 @@ if [[ -z "${apiUserPass}" ]]; then
 fi
 
 # test supplied details
-testCredentials=$(curl --connect-timeout 10 -k -s -u $apiUser:$apiUserPass $jssURL/JSSResource/accounts -w \\nStatus:\ %{http_code} –-output | grep Status: | grep -E '(2|4|5)' | awk '{print $2}')
+testCredentials=$(curl --connect-timeout 10 -k -s -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/accounts" -w \\nStatus:\ %{http_code} –-output | grep Status: | grep -E '(2|4|5)' | awk '{print $2}')
 if [[ "$testCredentials" == "200" ]]; then
     echo "Credentials tested and confirmed functional"
     sleep 3
@@ -71,25 +71,23 @@ fi
 
 findDeviceID() {
     # find ID of device
-	echo "Processing $serialNumber"
-    deviceID=`curl -k -s -u $apiUser:$apiUserPass $jssURL/JSSResource/mobiledevices/serialnumber/$serialNumber | xpath /mobile_device/general/id[1] | sed 's,<id>,,;s,</id>,,' | tail -1`
-    echo "Processing $serialNumber"
+    deviceID=`curl -k -s -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/mobiledevices/serialnumber/$serialNumber" | xpath '/mobile_device/general/id/text()' 2>/dev/null`
 }
 
 findUserID() {
     # find ID of user
-    userID=`curl -k -s -u $apiUser:$apiUserPass $jssURL/JSSResource/users/name/$userName | xpath user/id[1] | sed 's,<id>,,;s,</id>,,' | tail -1`
+    userID=`curl -k -s -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/users/name/$userName" | xpath 'user/id/text()' 2>/dev/null`
 }
 
 updateDeviceName() {
     # this changes the name of the Device
-    debug "curl -k -s -u $apiUser:$apiUserPass $jssURL/JSSResource/mobiledevicecommands/command/DeviceName/$fullName /id/$deviceID -X POST"
+    debug "curl -k -s -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/mobiledevicecommands/command/DeviceName/$fullName /id/$deviceID" -X POST"
 
     # this pushes a inventory for it
-    debug "curl -k -s -u $apiUser:$apiUserPass $jssURL/JSSResource/mobiledevicecommands/command/UpdateInventory/id/$deviceID -X POST"
+    debug "curl -k -s -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/mobiledevicecommands/command/UpdateInventory/id/$deviceID" -X POST"
 
     # this pushes a blankpush
-    debug "curl -k -s -u $apiUser:$apiUserPass $jssURL/JSSResource/mobiledevicecommands/command/BlankPush/id/$deviceID -X POST"
+    debug "curl -k -s -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/mobiledevicecommands/command/BlankPush/id/$deviceID" -X POST"
 }
 
 # create new user and apply position, grad year, and assigned device
@@ -116,7 +114,7 @@ createUser() {
     </mobile_devices>
   </links>
 </user>"
-    debug "curl -k -s -u $apiUser:$apiUserPass $jssURL/JSSResource/users/id/0 -H "Content-Type: text/xml" -X POST -d $postXML"
+    debug "curl -k -s -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/users/id/0" -H "Content-Type: text/xml" -X POST -d $postXML"
 }
 
 # update position, grad year, and assigned device
@@ -140,31 +138,29 @@ updateUserInfo() {
     </mobile_devices>
   </links>
 </user>"
-    debug "curl -k -s -u $apiUser:$apiUserPass $jssURL/JSSResource/users/id/$userID -H "Content-Type: text/xml" -X PUT -d $putXML"
+    debug "curl -k -s -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/users/id/$userID" -H "Content-Type: text/xml" -X PUT -d $putXML"
 }
 
 # remove first line of csvFile
 csvFileWithoutHeader=/tmp/rename_iOS_from-tmp.csv
 echo "Removing headers from CSV"
-awk 'NR>1' $csvFile > $csvFileWithoutHeader
+awk 'NR>1' "$csvFile" > $csvFileWithoutHeader
 
 # all the things
 while IFS=, read userName fullName gradYear position serialNumber
 do
     echo "Processing $fullName"
     findDeviceID
-    if [[ $deviceID == "" ]]; then
+    if [[ -z $deviceID ]]; then
         echo "Serial Number $serialNumber not found, skipping"
     else
-        echo "$serialNumber ID = $deviceID"
         findUserID
-        if [[ $userID == "" ]]; then
+        if [[ -z $userID ]]; then
             updateDeviceName
             echo "Username $userName not found, creating account now"
             createUser
         else
             updateDeviceName
-            echo "$userName ID = $userID"
             updateUserInfo
         fi
     fi
