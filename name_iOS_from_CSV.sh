@@ -71,16 +71,9 @@ fi
 
 findDeviceID() {
     # find ID of device
-    #deviceID=`curl -k -s -u $apiUser:$apiUserPass $jssURL/JSSResource/mobiledevices/serialnumber/$serialNumber | xpath /mobile_device/general/id[1] | sed 's,<id>,,;s,</id>,,' | tail -1`
+	echo "Processing $serialNumber"
+    deviceID=`curl -k -s -u $apiUser:$apiUserPass $jssURL/JSSResource/mobiledevices/serialnumber/$serialNumber | xpath /mobile_device/general/id[1] | sed 's,<id>,,;s,</id>,,' | tail -1`
     echo "Processing $serialNumber"
-    deviceIDCurl=$(curl --connect-timeout 10 -k -s -u $apiUser:$apiUserPass $jssURL/JSSResource/mobiledevices/serialnumber/$serialNumber)
-    echo "${deviceIDCurl}"
-    #deviceIDXpath=`$deviceIDCurl | xpath /mobile_device/general/id[1]`
-    #echo "Xpath = $deviceIDXpath"
-    #deviceIDSed=`$deviceIDXpath | sed 's,<id>,,;s,</id>,,'`
-    #echo "Sed = $deviceIDSed"
-    #deviceIDTail=`$deviceIDSed | tail -1`
-    #echo "Tail = $deviceIDTail"
 }
 
 findUserID() {
@@ -160,21 +153,21 @@ while IFS=, read userName fullName gradYear position serialNumber
 do
     echo "Processing $fullName"
     findDeviceID
-#    if [[ $deviceID == "" ]]; then
-#        echo "Serial Number $serialNumber not found, skipping"
-#    else
-#        echo "$serialNumber ID = $deviceID"
-#        findUserID
-#        if [[ $userID == "" ]]; then
-#            updateDeviceName
-#            echo "Username $userName not found, creating account now"
-#            createUser
-#        else
-#            updateDeviceName
-#            echo "$userName ID = $userID"
-#            updateUserInfo
-#        fi
-#    fi
+    if [[ $deviceID == "" ]]; then
+        echo "Serial Number $serialNumber not found, skipping"
+    else
+        echo "$serialNumber ID = $deviceID"
+        findUserID
+        if [[ $userID == "" ]]; then
+            updateDeviceName
+            echo "Username $userName not found, creating account now"
+            createUser
+        else
+            updateDeviceName
+            echo "$userName ID = $userID"
+            updateUserInfo
+        fi
+    fi
 #    echo "The Username is $userName"
 #    echo "The Full Name is $fullName"
 #    echo "The Grad Year is $gradYear"
