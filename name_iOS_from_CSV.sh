@@ -14,12 +14,14 @@ abort() {
 if [[ ${#} -lt 2 ]] || [[ ${*} == *"-h"* ]] || [[ ${*} == *"--help"* ]]; then
 	echo "Usage: $0 https://jss.example.com:8443 /path/to/example.csv [username] [password]"
 	echo ""
-    echo "CSV should have 5 columns with the following headers:
-        1. username      (username of student)
-        2. full-name     (full name of student)
-        3. grad-year     (grad year of student)
-        4. position      (student || teacher || staff)
-        5. serial-number (device serial number)"
+    echo "CSV should have 7 columns with the following headers:
+        1. username     	(username)
+        2. full-name		(full name)
+		3. email			(email address)
+		4. apple-id			(apple id)
+        5. grad-year    	(grad year of student)
+        6. position     	(student || teacher || staff)
+        7. serial-number	(device serial number)"
 	exit 1
 fi
 
@@ -67,14 +69,50 @@ else
     abort "The user account or password was wrong, or doesn't have API Rights"
 fi
 
+# find ID of device
 findDeviceID() {
-    # find ID of device
     deviceID=$(curl -k -s -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/mobiledevices/serialnumber/$serialNumber" | xpath '/mobile_device/general/id/text()' 2>/dev/null)
 }
 
+# find ID of user
 findUserID() {
-    # find ID of user
     userID=$(curl -k -s -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/users/name/$userName" | xpath 'user/id/text()' 2>/dev/null)
+}
+
+# find ID of 'Managed Apple ID' Extension Attribute
+findManagedAppleIDEA() {
+	managedAppleIDEAID=$(curl -k -s -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/userextensionattributes/name/Managed Apple ID" | xpath 'user/id/text()' 2>/dev/null)
+}
+
+# create 'Managed Apple ID' Extension Attribute
+createManagedAppleIDEA() {
+	postXML="<user_extension_attribute>
+	<name>Managed Apple ID</name>
+  <description/>
+  <data_type>String</data_type>
+  <input_type>
+	<type>Text Field</type>
+  </input_type>
+  </user_extension_attribute>"
+	curl -k -s -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/userextensionattributes/id/0" -H "Content-Type: text/xml" -X POST -d $postXML
+}
+
+# find ID of 'Grad Year' Extension Attribute
+findGradYearEA() {
+	gradYearEAID=$(curl -k -s -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/userextensionattributes/name/Grad Year" | xpath 'user/id/text()' 2>/dev/null)
+}
+
+# create 'Grad Year' Extension Attribute
+createGradYearEA() {
+	postXML="<user_extension_attribute>
+	<name>Grad Year</name>
+  <description/>
+  <data_type>Integer</data_type>
+  <input_type>
+	<type>Text Field</type>
+  </input_type>
+  </user_extension_attribute>"
+	curl -k -s -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/userextensionattributes/id/0" -H "Content-Type: text/xml" -X POST -d $postXML
 }
 
 updateDeviceName() {
@@ -96,12 +134,18 @@ createUser() {
   <email>$userName@olphbc.ca</email>
   <position>$position<position>
   <extension_attributes>
-    <extension_attribute>
-      <id>1</id>
-      <name>Graduation Year</name>
-      <type>Number</type>
-      <value>$gradYear</value>
-    </extension_attribute>
+  	<extension_attribute>
+	  <id>$gradYearEAID</id>
+	  <name>Grad Year</name>
+	  <type>Number</type>
+	  <value>$gradYear</value>
+  	</extension_attribute>
+	<extension_attribute>
+	  <id>$managedAppleIDEAID</id>
+	  <name>Managed Apple ID</name>
+	  <type>String</type>
+	  <value>$appleID</value>
+  	</extension_attribute>
   </extension_attributes>
   <links>
     <mobile_devices>
@@ -121,10 +165,16 @@ updateUserInfo() {
   <position>$position<position>
   <extension_attributes>
     <extension_attribute>
-      <id>1</id>
-      <name>Graduation Year</name>
+      <id>$gradYearEAID</id>
+      <name>Grad Year</name>
       <type>Number</type>
       <value>$gradYear</value>
+    </extension_attribute>
+	<extension_attribute>
+      <id>$managedAppleIDEAID</id>
+      <name>Managed Apple ID</name>
+      <type>String</type>
+      <value>$appleID</value>
     </extension_attribute>
   </extension_attributes>
   <links>
@@ -139,17 +189,40 @@ updateUserInfo() {
     curl -k -s -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/users/id/$userID" -H "Content-Type: text/xml" -X PUT -d $putXML
 }
 
+# find ID or create 'Managed Apple ID' Extension Attribute
+findManagedAppleIDEA
+if [[ -z $managedAppleIDEAID ]]; then
+	createManagedAppleIDEA
+	findManagedAppleIDEA
+	echo "Created 'Managed Apple ID' User Extension Attribute with ID: $managedAppleIDEAID"
+fi
+
+
+# find ID or create 'Grad Year' Extension Attribute
+findGradYearEA
+if [[ -z $gradYearEAID ]]; then
+	createGradYearEA
+	findGradYearEA
+	echo "Created 'Grad Year' User Extension Attribute with ID: $gradYearEAID"
+fi
+
 # remove first line of csvFile
 csvFileWithoutHeader=/tmp/rename_iOS_from-tmp.csv
 echo "Removing headers from CSV"
 awk 'NR>1' "$csvFile" > $csvFileWithoutHeader
 
 # all the things
-while IFS=, read userName fullName gradYear position serialNumber
+while IFS=, read userName fullName email appleID gradYear position serialNumber
 do
-	if [[ -z $userName ]] || [[ -z $fullName ]] || [[ -z $gradYear ]] || [[ -z $position ]] || [[ -z $serialNumber ]]; then
-		echo "Line missing required info, check CSV File"
+	if [[ -z $userName ]] || [[ -z $fullName ]] || [[ -z $email ]] || [[ -z $position ]] || [[ -z $serialNumber ]]; then
+		echo "Required info missing.  Skipping... Username: $userName Fullname: $fullName Email: $email Grad Year: $gradYear Position: $position Serial Number: $serialNumber"
 	else
+		if [[ -z $appleID ]]; then
+			appleID=$email
+		fi
+		if [[ -z $gradYear ]]; then
+			gradYear=0000
+		fi
 		echo "Processing $fullName"
     	findDeviceID
     	if [[ -z $deviceID ]]; then
