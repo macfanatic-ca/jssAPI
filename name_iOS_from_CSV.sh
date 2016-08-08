@@ -71,7 +71,7 @@ fi
 
 # find ID of device
 findDeviceID() {
-    deviceID=$(curl -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/mobiledevices/serialnumber/$serialNumber" | xpath '/mobile_device/general/id/text()')
+    deviceID=$(curl -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/mobiledevices/serialnumber/$serialNumber" | xpath '/mobile_device/general/id/text()' 2>/dev/null)
 }
 
 # find ID of user
