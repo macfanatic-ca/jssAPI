@@ -131,7 +131,7 @@ createUser() {
     postXML="<user>
   <name>$userName</name>
   <full_name>$fullName</full_name>
-  <email>$userName@olphbc.ca</email>
+  <email>$email</email>
   <position>$position<position>
   <extension_attributes>
   	<extension_attribute>
@@ -162,6 +162,8 @@ createUser() {
 # update position, grad year, and assigned device
 updateUserInfo() {
     putXML="<user>
+  <full_name>$fullName</full_name>
+  <email>$email</email>
   <position>$position<position>
   <extension_attributes>
     <extension_attribute>
