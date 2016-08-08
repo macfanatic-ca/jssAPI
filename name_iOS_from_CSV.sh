@@ -31,7 +31,7 @@ jssURL=$1
 # if jssURL is emply, warn user
 if [[ -z "${jssURL}" ]]; then
 	abort "Please specify a JSS server"
-elif [[ `curl --connect-timeout 10 -k -s $jssURL/healthCheck.html -w \\nStatus:\ %{http_code} | grep Status: | awk '{print $2}'` != 200 ]]; then
+elif [[ `curl --connect-timeout 10 -k -sS $jssURL/healthCheck.html -w \\nStatus:\ %{http_code} | grep Status: | awk '{print $2}'` != 200 ]]; then
 	abort "Could not connect to JSS server $jssURL"
 fi
 
@@ -61,9 +61,9 @@ if [[ -z "${apiUserPass}" ]]; then
 fi
 
 # test supplied details
-testCredentials=$(curl --connect-timeout 10 -k -s -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/accounts" -w \\nStatus:\ %{http_code} | grep Status: | awk '{print $2}')
+testCredentials=$(curl --connect-timeout 10 -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/accounts" -w \\nStatus:\ %{http_code} | grep Status: | awk '{print $2}')
 if [[ "$testCredentials" == "200" ]]; then
-    echo "Credentials tested and confirmed functional"
+    echo "Credentials look good, moving forward..."
     sleep 3
 else
     abort "The user account or password was wrong, or doesn't have API Rights"
@@ -71,124 +71,63 @@ fi
 
 # find ID of device
 findDeviceID() {
-    deviceID=$(curl -k -s -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/mobiledevices/serialnumber/$serialNumber" | xpath '/mobile_device/general/id/text()' 2>/dev/null)
+    deviceID=$(curl -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/mobiledevices/serialnumber/$serialNumber" | xpath '/mobile_device/general/id/text()')
 }
 
 # find ID of user
 findUserID() {
-    userID=$(curl -k -s -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/users/name/$userName" | xpath 'user/id/text()' 2>/dev/null)
+    userID=$(curl -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/users/name/$userName" | xpath 'user/id/text()' 2>/dev/null)
 }
 
 # find ID of 'Managed Apple ID' Extension Attribute
 findManagedAppleIDEA() {
-	managedAppleIDEAID=$(curl -k -s -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/userextensionattributes/name/Managed Apple ID" | xpath 'user/id/text()' 2>/dev/null)
+	managedAppleIDEAID=$(curl -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/userextensionattributes/name/Managed%20Apple%20ID" | xpath 'user_extension_attribute/id/text()' 2>/dev/null)
 }
 
 # create 'Managed Apple ID' Extension Attribute
 createManagedAppleIDEA() {
-	postXML="<user_extension_attribute>
-	<name>Managed Apple ID</name>
-  <description/>
-  <data_type>String</data_type>
-  <input_type>
-	<type>Text Field</type>
-  </input_type>
-  </user_extension_attribute>"
-	curl -k -s -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/userextensionattributes/id/0" -H "Content-Type: text/xml" -X POST -d $postXML
+	postXML="<user_extension_attribute><name>Managed Apple ID</name><data_type>String</data_type><input_type><type>Text Field</type></input_type></user_extension_attribute>"
+	curl -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/userextensionattributes/id/0" -H "Content-Type: text/xml" -X POST -d "$postXML" /dev/null 2>&1
 }
 
 # find ID of 'Grad Year' Extension Attribute
 findGradYearEA() {
-	gradYearEAID=$(curl -k -s -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/userextensionattributes/name/Grad Year" | xpath 'user/id/text()' 2>/dev/null)
+	gradYearEAID=$(curl -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/userextensionattributes/name/Grad%20Year" | xpath 'user_extension_attribute/id/text()' 2>/dev/null)
 }
 
 # create 'Grad Year' Extension Attribute
 createGradYearEA() {
-	postXML="<user_extension_attribute>
-	<name>Grad Year</name>
-  <description/>
-  <data_type>Integer</data_type>
-  <input_type>
-	<type>Text Field</type>
-  </input_type>
-  </user_extension_attribute>"
-	curl -k -s -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/userextensionattributes/id/0" -H "Content-Type: text/xml" -X POST -d $postXML
+	postXML="<user_extension_attribute><name>Grad Year</name><data_type>Integer</data_type><input_type><type>Text Field</type></input_type></user_extension_attribute>"
+	curl -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/userextensionattributes/id/0" -H "Content-Type: text/xml" -X POST -d "$postXML" > /dev/null 2>&1
 }
 
 updateDeviceName() {
     # this changes the name of the Device
-	curl -k -s -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/mobiledevicecommands/command/DeviceName/$fullName /id/$deviceID" -X POST
+	curl -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/mobiledevicecommands/command/DeviceName/$fullName" /id/$deviceID -X POST > /dev/null 2>&1
 
     # this pushes a inventory for it
-	curl -k -s -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/mobiledevicecommands/command/UpdateInventory/id/$deviceID" -X POST
+	curl -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/mobiledevicecommands/command/UpdateInventory/id/$deviceID" -X POST > /dev/null 2>&1
 
     # this pushes a blankpush
-    curl -k -s -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/mobiledevicecommands/command/BlankPush/id/$deviceID" -X POST
+    curl -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/mobiledevicecommands/command/BlankPush/id/$deviceID" -X POST > /dev/null 2>&1
+}
+
+# update username, full name, and position of user within device inventory
+updateDeviceInfo() {
+	putXML="<mobile_device><location><username>$userName</username><real_name>$fullName</real_name><position>$position</position></location></mobile_device>"
+	curl -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/mobiledevices/id/$deviceID" -H "Content-Type: text/xml" -X PUT -d "$putXML" > /dev/null 2>&1
 }
 
 # create new user and apply position, grad year, and assigned device
 createUser() {
-    postXML="<user>
-  <name>$userName</name>
-  <full_name>$fullName</full_name>
-  <email>$email</email>
-  <position>$position<position>
-  <extension_attributes>
-  	<extension_attribute>
-	  <id>$gradYearEAID</id>
-	  <name>Grad Year</name>
-	  <type>Number</type>
-	  <value>$gradYear</value>
-  	</extension_attribute>
-	<extension_attribute>
-	  <id>$managedAppleIDEAID</id>
-	  <name>Managed Apple ID</name>
-	  <type>String</type>
-	  <value>$appleID</value>
-  	</extension_attribute>
-  </extension_attributes>
-  <links>
-    <mobile_devices>
-      <mobile_device>
-        <id>$deviceID</id>
-        <name>$fullName</name>
-      </mobile_device>
-    </mobile_devices>
-  </links>
-</user>"
-    curl -k -s -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/users/id/0" -H "Content-Type: text/xml" -X POST -d $postXML
+    postXML="<user><name>$userName</name><full_name>$fullName</full_name><email>$email</email><position>$position</position><extension_attributes><extension_attribute><id>$gradYearEAID</id><name>Grad Year</name><type>Number</type><value>$gradYear</value></extension_attribute><extension_attribute><id>$managedAppleIDEAID</id><name>Managed Apple ID</name><type>String</type><value>$appleID</value></extension_attribute></extension_attributes></user>"
+    curl -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/users/id/0" -H "Content-Type: text/xml" -X POST -d "$postXML" > /dev/null 2>&1
 }
 
 # update position, grad year, and assigned device
 updateUserInfo() {
-    putXML="<user>
-  <full_name>$fullName</full_name>
-  <email>$email</email>
-  <position>$position<position>
-  <extension_attributes>
-    <extension_attribute>
-      <id>$gradYearEAID</id>
-      <name>Grad Year</name>
-      <type>Number</type>
-      <value>$gradYear</value>
-    </extension_attribute>
-	<extension_attribute>
-      <id>$managedAppleIDEAID</id>
-      <name>Managed Apple ID</name>
-      <type>String</type>
-      <value>$appleID</value>
-    </extension_attribute>
-  </extension_attributes>
-  <links>
-    <mobile_devices>
-      <mobile_device>
-        <id>$deviceID</id>
-        <name>$fullName</name>
-      </mobile_device>
-    </mobile_devices>
-  </links>
-</user>"
-    curl -k -s -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/users/id/$userID" -H "Content-Type: text/xml" -X PUT -d $putXML
+    putXML="<user><full_name>$fullName</full_name><email>$email</email><position>$position</position><extension_attributes><extension_attribute><id>$gradYearEAID</id><name>Grad Year</name><type>Number</type><value>$gradYear</value></extension_attribute><extension_attribute><id>$managedAppleIDEAID</id><name>Managed Apple ID</name><type>String</type><value>$appleID</value></extension_attribute></extension_attributes></user>"
+    curl -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/users/id/$userID" -H "Content-Type: text/xml" -X PUT -d "$putXML" > /dev/null 2>&1
 }
 
 # find ID or create 'Managed Apple ID' Extension Attribute
@@ -228,16 +167,18 @@ do
 		echo "Processing $fullName"
     	findDeviceID
     	if [[ -z $deviceID ]]; then
-        	echo "Serial Number $serialNumber not found, skipping"
+        	echo "Serial Number $serialNumber not found, skipping..."
     	else
         	findUserID
         	if [[ -z $userID ]]; then
             	updateDeviceName
-            	echo "Username $userName not found, creating account now"
+            	echo "Username $userName not found, creating account now..."
             	createUser
+				updateDeviceInfo
         	else
             	updateDeviceName
             	updateUserInfo
+				updateDeviceInfo
         	fi
     	fi
 	fi
