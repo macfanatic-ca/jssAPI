@@ -114,7 +114,8 @@ createDeviceGradYearEA() {
 
 updateDeviceName() {
     # this changes the name of the Device
-	curl -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/mobiledevicecommands/command/DeviceName/$fullName" /id/$deviceID -X POST > /dev/null 2>&1
+	fullDeviceName=$(echo "$fullName" | sed 's/ /%20/g')
+	curl -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/mobiledevicecommands/command/DeviceName/$fullDeviceName/id/$deviceID" -X POST > /dev/null 2>&1
 
     # this pushes a inventory for it
 	curl -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/mobiledevicecommands/command/UpdateInventory/id/$deviceID" -X POST > /dev/null 2>&1
@@ -183,20 +184,20 @@ do
 		if [[ -z $gradYear ]]; then
 			gradYear=0000
 		fi
-		echo "Processing $fullName"
+		echo "Processing $fullName..."
     	findDeviceID
     	if [[ -z $deviceID ]]; then
         	echo "Serial Number $serialNumber not found, skipping..."
     	else
         	findUserID
         	if [[ -z $userID ]]; then
-            	updateDeviceName
             	echo "Username $userName not found, creating account now..."
             	createUser
+				updateDeviceName
 				updateDeviceInfo
         	else
-            	updateDeviceName
             	updateUserInfo
+				updateDeviceName
 				updateDeviceInfo
         	fi
     	fi
