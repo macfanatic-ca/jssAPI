@@ -65,7 +65,6 @@ fi
 testCredentials=$(curl --connect-timeout 10 -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/accounts" -w \\nStatus:\ %{http_code} | grep Status: | awk '{print $2}')
 if [[ "$testCredentials" == "200" ]]; then
     echo "Credentials look good, moving forward..."
-    sleep 3
 else
     abort "The user account or password was wrong, or doesn't have API Rights"
 fi
