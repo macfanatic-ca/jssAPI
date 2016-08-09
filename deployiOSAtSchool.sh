@@ -225,6 +225,10 @@ do
 		fi
 		if [[ -z $stream ]]; then
 			stream=NA
+		elif [[ $stream == a ]]; then
+			stream=A
+		elif [[ $stream == b ]]; then
+			stream=B
 		fi
 		echo "Processing $fullName..."
     	findDeviceID
