@@ -1,4 +1,4 @@
-# JSS API
+# JSS API Scripts
 
 This repo contains scripts used in conjunction with the JSS API.
 
