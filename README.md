@@ -13,5 +13,6 @@ Used within the k-7 schools we work with, this will utilize a CSV containing Use
 
 #### Change Log
 
+v1.3 - Added logic for 'Stream' Mobile Device & User Extension Attributes
 v1.2 - Added logic for 'Grad Year' Mobile Device Extension Attributes
 v1.1 - Added logic for 'Grad Year' & 'Managed Apple ID' User Extension Attributes
