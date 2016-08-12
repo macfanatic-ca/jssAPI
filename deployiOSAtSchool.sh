@@ -208,7 +208,7 @@ fi
 # remove first line of csvFile
 csvFileWithoutHeader=/tmp/rename_iOS_from-tmp.csv
 echo "Removing headers from CSV..."
-awk 'NR>1' "$csvFile" > $csvFileWithoutHeader
+tr -d $'\r' < $csvFile | awk 'NR>1' > $csvFileWithoutHeader
 
 # all the things
 while IFS=, read userName fullName email appleID gradYear stream position serialNumber
