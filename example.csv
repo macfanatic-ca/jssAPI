@@ -1,0 +1,3 @@
+username,full-name,email,apple-id,grad-year,stream,position,serial-number
+john.doe,John Doe,john.doe@example.ca,john.doe@appleid.example.ca,2020,B,Student,ABCDE12345
+jane.doe,Jane Doe,jane.doe@example.ca,,2020,,Teacher,EFGHJ567890
