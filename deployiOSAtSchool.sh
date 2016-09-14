@@ -17,10 +17,10 @@ if [[ ${#} -lt 2 ]] || [[ ${*} == *"-h"* ]] || [[ ${*} == *"--help"* ]]; then
     echo "CSV should have 8 columns with the following headers:
         1. username     	(username)
         2. full-name		(full name)
-		3. email			(email address)
-		4. apple-id			(apple id)
+        3. email			(email address)
+        4. apple-id			(apple id)
         5. grad-year    	(grad year of student)
-		6. stream			(for A/B schools)
+        6. stream			(for A/B schools)
         7. position     	(student || teacher || staff)
         8. serial-number	(device serial number)"
 	exit 1
@@ -71,17 +71,17 @@ fi
 
 # find ID of device
 findDeviceID() {
-    deviceID=$(curl -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/mobiledevices/serialnumber/$serialNumber" | xpath '/mobile_device/general/id/text()' 2>/dev/null)
+    deviceID=$(curl -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/mobiledevices/serialnumber/$serialNumber" -H "Accept: application/xml" | xpath '/mobile_device/general/id/text()' 2>/dev/null)
 }
 
 # find ID of user
 findUserID() {
-    userID=$(curl -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/users/name/$userName" | xpath 'user/id/text()' 2>/dev/null)
+    userID=$(curl -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/users/name/$userName" -H "Accept: application/xml" | xpath 'user/id/text()' 2>/dev/null)
 }
 
 # find ID of 'Managed Apple ID' Extension Attribute
 findManagedAppleIDEA() {
-	managedAppleIDEAID=$(curl -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/userextensionattributes/name/Managed%20Apple%20ID" | xpath 'user_extension_attribute/id/text()' 2>/dev/null)
+	managedAppleIDEAID=$(curl -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/userextensionattributes/name/Managed%20Apple%20ID" -H "Accept: application/xml" | xpath 'user_extension_attribute/id/text()' 2>/dev/null)
 }
 
 # create 'Managed Apple ID' Extension Attribute
@@ -92,7 +92,7 @@ createManagedAppleIDEA() {
 
 # find ID of 'Grad Year' Extension Attribute
 findUserGradYearEA() {
-	userGradYearEAID=$(curl -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/userextensionattributes/name/Grad%20Year" | xpath 'user_extension_attribute/id/text()' 2>/dev/null)
+	userGradYearEAID=$(curl -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/userextensionattributes/name/Grad%20Year" -H "Accept: application/xml" | xpath 'user_extension_attribute/id/text()' 2>/dev/null)
 }
 
 # create 'Grad Year' Extension Attribute
@@ -103,7 +103,7 @@ createUserGradYearEA() {
 
 # find ID of 'Grad Year' Extension Attribute
 findDeviceGradYearEA() {
-	deviceGradYearEAID=$(curl -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/mobiledeviceextensionattributes/name/Grad%20Year" | xpath 'mobile_device_extension_attribute/id/text()' 2>/dev/null)
+	deviceGradYearEAID=$(curl -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/mobiledeviceextensionattributes/name/Grad%20Year" -H "Accept: application/xml" | xpath 'mobile_device_extension_attribute/id/text()' 2>/dev/null)
 }
 
 # create 'Grad Year' Extension Attribute
@@ -114,7 +114,7 @@ createDeviceGradYearEA() {
 
 # find ID of 'Stream' Extension Attribute
 findUserStreamEA() {
-	userStreamEAID=$(curl -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/userextensionattributes/name/Stream" | xpath 'user_extension_attribute/id/text()' 2>/dev/null)
+	userStreamEAID=$(curl -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/userextensionattributes/name/Stream" -H "Accept: application/xml" | xpath 'user_extension_attribute/id/text()' 2>/dev/null)
 }
 
 # create 'Stream' Extension Attribute
@@ -125,7 +125,7 @@ createUserStreamEA() {
 
 # find ID of 'Stream' Extension Attribute
 findDeviceStreamEA() {
-	deviceStreamEAID=$(curl -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/mobiledeviceextensionattributes/name/Stream" | xpath 'mobile_device_extension_attribute/id/text()' 2>/dev/null)
+	deviceStreamEAID=$(curl -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/mobiledeviceextensionattributes/name/Stream" -H "Accept: application/xml" | xpath 'mobile_device_extension_attribute/id/text()' 2>/dev/null)
 }
 
 # create 'Stream' Extension Attribute
