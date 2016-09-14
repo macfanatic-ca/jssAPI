@@ -47,6 +47,46 @@ Used within the k-7 schools we work with, this will utilize a CSV with the follo
 
 #### Change Log
 
+v1.4 - Added support for JSS 9.93+ which returns json by default
 v1.3 - Added logic for 'Stream' Mobile Device & User Extension Attributes  
 v1.2 - Added logic for 'Grad Year' Mobile Device Extension Attributes  
 v1.1 - Added logic for 'Grad Year' & 'Managed Apple ID' User Extension Attributes  
+v1.0 - Launch  
+
+## deployUsersAtSchool.sh
+### Synopsis
+
+Used within the k-7 schools we work with, this will utilize a CSV with the following headers:
+```
+1. username     	(username)
+2. full-name		(full name)
+3. email			(email address)
+4. apple-id         (apple id)
+5. grad-year    	(grad year of student)
+6. stream           (for A/B schools)
+7. position     	(student || teacher || staff)
+```
+### Functions of deployUsersAtSchool.sh
+* Create User Extension Attributes:
+    * Grad Year
+    * Stream
+    * Managed Apple ID
+* Update existing users with:
+    * Full Name
+    * Email Address
+    * Managed Apple ID (EA)
+    * Grad Year (EA)
+    * Stream (EA)
+    * Position (Student, Teacher, Staff)
+* Create new users with:
+    * Username
+    * Full Name
+    * Email Address
+    * Managed Apple ID (EA)
+    * Stream (EA)
+    * Grad Year (EA)
+    * Position (Student, Teacher, Staff)
+
+#### Change Log
+
+v1.0 - Launch  
