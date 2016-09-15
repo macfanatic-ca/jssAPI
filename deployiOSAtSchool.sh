@@ -15,14 +15,14 @@ if [[ ${#} -lt 2 ]] || [[ ${*} == *"-h"* ]] || [[ ${*} == *"--help"* ]]; then
 	echo "Usage: $0 https://jss.example.com:8443 /path/to/example.csv [username] [password]"
 	echo ""
     echo "CSV should have 8 columns with the following headers:
-        1. username     	(username)
-        2. full-name		(full name)
-        3. email			(email address)
-        4. apple-id			(apple id)
-        5. grad-year    	(grad year of student)
-        6. stream			(for A/B schools)
-        7. position     	(student || teacher || staff)
-        8. serial-number	(device serial number)"
+        1. username         (username)                    [required]
+        2. full-name        (full name)                   [required]
+        3. email            (email address)               [required]
+        4. apple-id         (apple id)                    [can be left empty]
+        5. grad-year        (grad year of student)        [can be left empty]
+        6. stream           (for A/B schools)             [can be left empty]
+        7. position         (student || teacher || staff) [required]
+        8. serial-number    (device serial number)        [required]"
 	exit 1
 fi
 
