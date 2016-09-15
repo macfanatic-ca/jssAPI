@@ -90,3 +90,19 @@ Used within the k-7 schools we work with, this will utilize a CSV with the follo
 #### Change Log
 
 v1.0 - Launch  
+
+## modifyMacPosition.sh
+### Synopsis
+
+Used within the k-7 schools we work with, this will utilize a CSV with the following headers:
+```
+1. position     	(student || teacher || staff)
+2. serial-number	(device serial number)
+```
+### Functions of modifyMacPosition.sh
+* Update Computers with:
+    * Position
+
+#### Change Log
+
+v1.0 - Launch  
