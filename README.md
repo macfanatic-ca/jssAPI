@@ -115,9 +115,25 @@ Used within the k-7 schools we work with, this will utilize a CSV with the follo
 1. position     	(student || teacher || staff)
 2. serial-number	(device serial number)
 ```
-### Functions of modifyMacPosition.sh
+### Functions of modifyiOSPosition.sh
 * Update Mobile devices with:
     * Position
+
+#### Change Log
+
+v1.0 - Launch  
+
+## modifyMacName.sh
+### Synopsis
+
+Used within the k-7 schools we work with, this will utilize a CSV with the following headers:
+```
+1. device-name    (computer name)
+2. serial-number	(device serial number)
+```
+### Functions of modifyMacName.sh
+* Update Computers with:
+    * Name
 
 #### Change Log
 
