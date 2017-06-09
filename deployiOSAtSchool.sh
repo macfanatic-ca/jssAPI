@@ -97,7 +97,7 @@ findUserGradYearEA() {
 
 # create 'Grad Year' Extension Attribute
 createUserGradYearEA() {
-	postXML="<user_extension_attribute><name>Stream</name><data_type>Integer</data_type><input_type><type>Text Field</type></input_type></user_extension_attribute>"
+	postXML="<user_extension_attribute><name>Grad Year</name><data_type>Integer</data_type><input_type><type>Text Field</type></input_type></user_extension_attribute>"
 	curl -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/userextensionattributes/id/0" -H "Content-Type: text/xml" -X POST -d "$postXML" > /dev/null 2>&1
 }
 
@@ -108,7 +108,7 @@ findDeviceGradYearEA() {
 
 # create 'Grad Year' Extension Attribute
 createDeviceGradYearEA() {
-	postXML="<mobile_device_extension_attribute><name>Stream</name><data_type>Integer</data_type><input_type><type>Text Field</type></input_type><inventory_display>User and Location</inventory_display></mobile_device_extension_attribute>"
+	postXML="<mobile_device_extension_attribute><name>Grad Year</name><data_type>Integer</data_type><input_type><type>Text Field</type></input_type><inventory_display>User and Location</inventory_display></mobile_device_extension_attribute>"
 	curl -k -sS -u "$apiUser":"$apiUserPass" "$jssURL/JSSResource/mobiledeviceextensionattributes/id/0" -H "Content-Type: text/xml" -X POST -d "$postXML" > /dev/null 2>&1
 }
 
